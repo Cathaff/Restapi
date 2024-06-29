@@ -1,42 +1,57 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RealEstateAPi.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using RealEstateApi.Data;
+using RealEstateApi.Models;
 
-namespace RealEstateAPi.Controllers
+
+namespace RealEstateApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        // Is this a list of Models?
-        private static List<Category> categories = new List<Category>()
-        {
-            new Category() { Id = 0, Name = "Apartment", ImageUrl= "appartment.png"},
-            new Category() { Id = 1, Name = "Commercial", ImageUrl= "commercial.png"},
-        };
+        ApiDbContext _dbContext = new ApiDbContext();
 
-        [HttpGet]  // api/categories
+        // GET: api/<CategoriesController>
+        [HttpGet]
         public IEnumerable<Category> Get()
         {
-            return categories;
+            return _dbContext.Categories;
         }
 
+        // GET api/<CategoriesController>/5
+        [HttpGet("{id}")]
+        public Category Get(int id)
+        {
+            var category = _dbContext.Categories.FirstOrDefault(x => x.Id == id);
+            return category;
+        }
+
+        // POST api/<CategoriesController>
         [HttpPost]
         public void Post([FromBody] Category category)
         {
-            categories.Add(category);
+            _dbContext.Categories.Add(category);
+            _dbContext.SaveChanges();
+
         }
 
+        // PUT api/<CategoriesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Category category)
+        public void Put(int id, [FromBody] Category categoryObj)
         {
-            categories[id] = category;
+            var category = _dbContext.Categories.Find(id);
+            category.Name = categoryObj.Name;
+            category.ImageUrl = categoryObj.ImageUrl;
+            _dbContext.SaveChanges();
         }
 
+        // DELETE api/<CategoriesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id) 
+        public void Delete(int id)
         {
-            categories.RemoveAt(id);
+            var category = _dbContext.Categories.Find(id);
+            _dbContext.Categories.Remove(category);
+            _dbContext.SaveChanges();
         }
     }
 }
